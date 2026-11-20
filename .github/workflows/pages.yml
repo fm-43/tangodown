@@ -1,0 +1,66 @@
+# The public repository's workflow; tools/publish.sh puts it at .github/workflows/pages.yml there.
+# It puts the site on GitHub Pages with the latest release's version number and disk image in both
+# Download buttons and both "Version … · macOS 26 or later" lines (the other languages read the
+# number from there). The latest release skips drafts and pre-releases.
+name: Website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # A release's run is on its tag, and Pages deploys only from the default branch, so a release
+  # starts this workflow again there. Runs started with the workflow's own token are allowed to.
+  release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref "${{ github.event.repository.default_branch }}"
+
+  deploy:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Put the latest release on the page
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir _site
+          cp -R index.html css js assets _site/
+          if release=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" 2>/dev/null); then
+            version=$(jq -r '.tag_name | ltrimstr("v")' <<<"$release")
+            url=$(jq -r '[.assets[] | select(.name | endswith(".dmg"))][0].browser_download_url // empty' <<<"$release")
+            if [ -z "$url" ]; then
+              echo "::error::Release $version has no .dmg file"
+              exit 1
+            fi
+            sed -i -E \
+              -e "s#href=\"[^\"]*\"( data-download)#href=\"$url\"\1#g" \
+              -e "s#(<span data-slot=\"version\">)[^<]*(</span>)#\1$version\2#g" \
+              _site/index.html
+            echo "Version $version: $url"
+          else
+            echo "::warning::No release yet, so the Download buttons keep the links in index.html"
+          fi
+      - uses: actions/upload-pages-artifact@v4
+      - id: deployment
+        uses: actions/deploy-pages@v4

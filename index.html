@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title data-i18n="meta.title">TangoDown – Keep every shot.</title>
+  <meta name="description" data-i18n-attr="content:meta.desc" content="TangoDown saves your XBOX screenshots and game clips to your Mac before XBOX network deletes them, then backs them up to iCloud Drive, Google Drive, Dropbox, a NAS or WebDAV.">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#fbfbfd">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png">
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+
+  <!-- Social cards need absolute URLs once the site has a domain: see README.md -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" data-i18n-attr="content:meta.title" content="TangoDown – Keep every shot.">
+  <meta property="og:description" data-i18n-attr="content:meta.ogDesc" content="XBOX network deletes your captures after 90 days. TangoDown saves every one to your Mac, then backs it up wherever you keep things.">
+  <meta property="og:image" content="assets/brand/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preload" as="image" href="assets/wallpapers/swirl-2880.webp" imagesrcset="assets/wallpapers/swirl-1600.webp 1600w, assets/wallpapers/swirl-2880.webp 2880w" imagesizes="100vw">
+  <!-- The language: the page's address (?lang=fr), then the one chosen here before, then the browser's. js/i18n.js
+       swaps the words in before site.js starts; until then a page in another language stays hidden. -->
+  <script>
+    (function () {
+      var root = document.documentElement, lang = null, list, i;
+      function match(tag) {
+        tag = String(tag || "").toLowerCase().split(";")[0].trim();
+        if (/^zh-(hant|tw|hk|mo)\b/.test(tag)) return "zh-Hant";
+        if (/^zh\b/.test(tag)) return "zh-Hans";
+        tag = tag.split("-")[0];
+        return ["en", "fr", "de", "ja"].indexOf(tag) >= 0 ? tag : null;
+      }
+      try { lang = match(new URLSearchParams(location.search).get("lang")); } catch (e) {}
+      if (!lang) try { lang = match(localStorage.getItem("tangodown.lang")); } catch (e) {}
+      list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+      for (i = 0; !lang && i < list.length; i++) lang = match(list[i]);
+      lang = lang || "en";
+      root.lang = lang;
+      root.className = lang === "en" ? "js" : "js i18n-wait";
+      if (lang !== "en") setTimeout(function () { root.classList.remove("i18n-wait"); }, 2500);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/i18n.js" defer></script>
+  <script src="js/site.js" defer></script>
+</head>
+<body>
+
+<!-- Symbols, drawn in the spirit of SF Symbols. Brands are named in text, never drawn.
+     s-* are the symbols TangoDown's own window uses. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7.2 18.5h10.3a4.1 4.1 0 0 0 .55-8.16A6 6 0 0 0 6.6 9.6a4.45 4.45 0 0 0 .6 8.9Z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7.6A1.6 1.6 0 0 1 4.6 6h4.1l2 2.1h8.7A1.6 1.6 0 0 1 21 9.7v8.2a1.6 1.6 0 0 1-1.6 1.6H4.6A1.6 1.6 0 0 1 3 17.9Z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3.8 7.6 12 3.6l8.2 4-8.2 4Z"/><path d="M3.8 7.6v8.6l8.2 4.2 8.2-4.2V7.6M12 11.6v8.8"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="4" y="3.8" width="16" height="7.2" rx="1.8"/><rect x="4" y="13" width="16" height="7.2" rx="1.8"/><path d="M7.6 7.4h.01M7.6 16.6h.01M11 7.4h5M11 16.6h5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.5 2.4 3.7 5.3 3.7 8.6s-1.2 6.2-3.7 8.6c-2.5-2.4-3.7-5.3-3.7-8.6S9.5 5.8 12 3.4Z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.4" width="14" height="10" rx="2.2"/><path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/></symbol>
+  <symbol id="i-drive" viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="10" rx="2.4"/><path d="M6.8 14.2h4.4M16.6 12.5h.01"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="8.1" r="1.3"/><path d="M7.6 10.4c2.9.8 5.9.8 8.8 0M12 11.3v3.2m0 0-2 3.8m2-3.8 2 3.8"/></symbol>
+  <symbol id="i-chevron-l" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
+  <symbol id="i-chevron-r" viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5"/></symbol>
+  <symbol id="i-live" viewBox="0 0 24 24"><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="5.6"/><circle cx="12" cy="12" r="9" stroke-dasharray="0.1 2.6"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 4.5v14M6.5 13l5.5 5.5 5.5-5.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M8 5.7v12.6a.9.9 0 0 0 1.37.77l10.1-6.3a.9.9 0 0 0 0-1.54L9.37 4.93A.9.9 0 0 0 8 5.7Z"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M5 12.4a7 7 0 1 0 2.2-5.5"/><path d="M6.6 3.4v3.9h3.9"/></symbol>
+  <symbol id="s-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.6" height="6.6" rx="1.7"/><rect x="13.4" y="4" width="6.6" height="6.6" rx="1.7"/><rect x="4" y="13.4" width="6.6" height="6.6" rx="1.7"/><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="1.7"/></symbol>
+  <symbol id="s-photo" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.6"/><path d="m3.5 16.6 4.7-4.7a1.2 1.2 0 0 1 1.7 0l4.6 4.6m-1.7-1.7 1.8-1.8a1.2 1.2 0 0 1 1.7 0l3.2 3.2"/><circle cx="15.7" cy="9.3" r="1.3"/></symbol>
+  <symbol id="s-video" viewBox="0 0 24 24"><rect x="2.8" y="6.2" width="12.8" height="11.6" rx="2.6"/><path d="m15.6 10.6 4.5-2.8a.6.6 0 0 1 .9.5v7.4a.6.6 0 0 1-.9.5l-4.5-2.8"/></symbol>
+  <symbol id="s-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/></symbol>
+  <symbol id="s-refresh" viewBox="0 0 24 24"><path d="M19 12.4a7 7 0 1 1-2.2-5.5"/><path d="M17.4 3.4v3.9h-3.9"/></symbol>
+  <symbol id="s-filter" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></symbol>
+  <symbol id="s-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 11v5.4"/><path d="M12 7.9h.01" stroke-width="2.6"/></symbol>
+  <symbol id="s-search" viewBox="0 0 24 24"><circle cx="10.6" cy="10.6" r="6.2"/><path d="m15.2 15.2 4.6 4.6"/></symbol>
+  <symbol id="s-xmark" viewBox="0 0 24 24"><path d="m6.6 6.6 10.8 10.8m0-10.8L6.6 17.4"/></symbol>
+  <symbol id="s-trash" viewBox="0 0 24 24"><path d="M4.4 6.6h15.2M9.4 6.6V5.1a1.2 1.2 0 0 1 1.2-1.2h2.8a1.2 1.2 0 0 1 1.2 1.2v1.5M6.2 6.6l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.6a1.6 1.6 0 0 0 1.6-1.5l.9-12M10 10.4v6m4-6v6"/></symbol>
+  <symbol id="s-chevron-down" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+  <symbol id="s-check" viewBox="0 0 24 24"><path d="m6.6 12.4 3.6 3.6 7.2-7.6"/></symbol>
+</svg>
+
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top" aria-label="TangoDown, back to top" data-i18n-attr="aria-label:nav.home" draggable="false">
+      <img src="assets/brand/icon-128.png" width="26" height="26" alt="" draggable="false">
+      <span>TangoDown</span>
+    </a>
+    <button class="nav-menu-btn" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu" data-i18n-attr="aria-label:nav.menu">
+      <svg viewBox="0 0 18 10" aria-hidden="true"><path d="M1.5 1.75 9 8.25l7.5-6.5"/></svg>
+    </button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Sections" data-i18n-attr="aria-label:nav.sections">
+        <a href="#overview" data-i18n="nav.overview">Overview</a>
+        <a href="#backups" data-i18n="nav.backups">Backups</a>
+        <a href="#library" data-i18n="nav.library">Library</a>
+        <a href="#design" data-i18n="nav.design">Design</a>
+        <a href="#live-photo" data-i18n="nav.live">Live Photo</a>
+        <a href="#details" data-i18n="nav.details">Details</a>
+      </nav>
+      <div class="lang-switch">
+        <button class="lang-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="lang-menu" aria-label="Language" aria-describedby="lang-current" data-i18n-attr="aria-label:lang.label">
+          <svg class="icon lang-globe" aria-hidden="true"><use href="#i-globe"/></svg>
+          <span class="lang-name" id="lang-current">English</span>
+          <svg class="icon lang-chevron" aria-hidden="true"><use href="#s-chevron-down"/></svg>
+        </button>
+        <div class="lang-popover" hidden>
+          <div class="lang-surface">
+            <div class="lang-backdrop" aria-hidden="true"></div>
+            <div class="lang-specular" aria-hidden="true"></div>
+            <div class="lang-list" id="lang-menu" role="listbox" aria-label="Language" data-i18n-attr="aria-label:lang.label" tabindex="-1">
+              <div class="lang-lens" role="presentation" aria-hidden="true"></div>
+              <button class="lang-option" type="button" role="option" data-lang="en" lang="en" aria-selected="true" tabindex="-1">
+                <span class="lang-option-label">English</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+              <button class="lang-option" type="button" role="option" data-lang="fr" lang="fr" aria-selected="false" tabindex="-1">
+                <span class="lang-option-label">Français</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+              <button class="lang-option" type="button" role="option" data-lang="de" lang="de" aria-selected="false" tabindex="-1">
+                <span class="lang-option-label">Deutsch</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+              <button class="lang-option" type="button" role="option" data-lang="ja" lang="ja" aria-selected="false" tabindex="-1">
+                <span class="lang-option-label">日本語</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+              <button class="lang-option" type="button" role="option" data-lang="zh-Hant" lang="zh-Hant" aria-selected="false" tabindex="-1">
+                <span class="lang-option-label">繁體中文</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+              <button class="lang-option" type="button" role="option" data-lang="zh-Hans" lang="zh-Hans" aria-selected="false" tabindex="-1">
+                <span class="lang-option-label">简体中文</span>
+                <svg class="icon lang-check" aria-hidden="true"><use href="#s-check"/></svg>
+              </button>
+            </div>
+          </div>
+          <svg class="lang-frame" aria-hidden="true"></svg>
+        </div>
+      </div>
+    </div>
+    <a class="btn btn-small" href="#download" data-i18n="nav.download">Download</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Hero ================================================================ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero-copy">
+      <p class="eyebrow reveal" data-i18n="hero.eyebrow">TangoDown for Mac</p>
+      <h1 id="hero-title" class="hero-title" data-i18n="hero.title">Keep every <span class="target" id="hero-target" data-slot="target"><span class="target-word" data-i18n="hero.word">shot.</span><span class="tick tick-t" aria-hidden="true"></span><span class="tick tick-b" aria-hidden="true"></span><span class="tick tick-l" aria-hidden="true"></span><span class="tick tick-r" aria-hidden="true"></span></span></h1>
+      <p class="lead hero-lead reveal" data-i18n="hero.lead">XBOX network deletes your screenshots and game clips 90&nbsp;days after they upload. <strong>TangoDown saves every one to your Mac, then backs it up to wherever you keep things.</strong></p>
+      <div class="cta-row reveal">
+        <a class="btn" href="downloads/TangoDown-1.0.9.dmg" data-download>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"/></svg>
+          <span data-i18n="hero.cta">Download for Mac</span>
+        </a>
+        <a class="link-more" href="#overview" data-i18n="hero.more">See how it works</a>
+      </div>
+      <p class="fine reveal" data-i18n="fine">Version <span data-slot="version">1.0.9</span> · macOS <span data-slot="macos">26</span> or later</p>
+    </div>
+
+    <div class="hero-stage">
+      <figure class="desktop" id="hero-desktop">
+        <img class="desktop-wall" src="assets/wallpapers/swirl-2880.webp"
+             srcset="assets/wallpapers/swirl-1600.webp 1600w, assets/wallpapers/swirl-2880.webp 2880w"
+             sizes="(max-width: 1320px) 100vw, 1280px" alt="" width="2880" height="1620" fetchpriority="high" draggable="false">
+        <img class="desktop-window mac-shot" src="assets/shots/library.webp" width="2784" height="1808"
+             data-i18n-attr="alt:hero.alt" alt="TangoDown's main window: a sidebar of games with their XBOX icons beside a grid of screenshots and clips." draggable="false">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Overview: four moves, played by the scroll ================================
+       Twelve XBOX screenshots from six games (tools/build.py lists which is which). Each
+       tile's data-game is its game's place among the .ov-game names, and the last tile of a
+       game tops its stack. The path under Filed is the name TangoDown gave capture 3, the top
+       of the first stack, from the time it was captured. -->
+  <section class="overview" id="overview" aria-labelledby="overview-title">
+    <div class="ov-intro">
+      <h2 id="overview-title" class="ov-lines">
+        <span class="ov-line" data-drift="-1" data-i18n="ov.line1">Every <span class="pill" data-slot="pill"><img src="assets/shots/capture-2-thumb.webp" srcset="assets/shots/capture-2-thumb.webp 480w, assets/shots/capture-2.webp 960w" sizes="(min-width: 1615px) 320px, (max-width: 365px) 72px, 19.8vw" alt="" width="480" height="270" loading="lazy" draggable="false"></span> capture</span>
+        <span class="ov-line" data-drift="1" data-i18n="ov.line2">from XBOX <span class="pill" data-slot="pill"><img src="assets/shots/capture-5-thumb.webp" srcset="assets/shots/capture-5-thumb.webp 480w, assets/shots/capture-5.webp 960w" sizes="(min-width: 1615px) 320px, (max-width: 365px) 72px, 19.8vw" alt="" width="480" height="270" loading="lazy" draggable="false"></span><span class="ov-punct">,</span></span>
+        <span class="ov-line" data-drift="-1" data-i18n="ov.line3"><span class="pill" data-slot="pill"><img src="assets/shots/capture-7-thumb.webp" srcset="assets/shots/capture-7-thumb.webp 480w, assets/shots/capture-7.webp 960w" sizes="(min-width: 1615px) 320px, (max-width: 365px) 72px, 19.8vw" alt="" width="480" height="270" loading="lazy" draggable="false"></span> on your Mac.</span>
+      </h2>
+      <div class="container ov-intro-foot">
+        <p class="lead reveal" data-i18n="ov.lead">TangoDown checks XBOX network for new screenshots and game clips and brings them home to your Mac. <strong>Then it backs them up to the places you choose.</strong></p>
+      </div>
+    </div>
+
+    <div class="ov-scene" id="ov-scene">
+      <div class="ov-sticky">
+        <div class="container ov-layout">
+          <div class="ov-text">
+            <p class="ov-count" aria-hidden="true"><span class="ov-count-roll"><span>01</span><span>02</span><span>03</span><span>04</span></span><span class="ov-count-of">/ 04</span></p>
+            <ol class="ov-beats">
+              <li class="ov-beat is-active">
+                <h3><span data-i18n="ov.found">Found.</span></h3>
+                <p data-i18n="ov.foundText">TangoDown checks XBOX network every ten minutes, or on the schedule you set, for screenshots and clips it hasn’t seen.</p>
+              </li>
+              <li class="ov-beat">
+                <h3><span data-i18n="ov.saved">Saved.</span></h3>
+                <p data-i18n="ov.savedText">With “Download new captures automatically” on, they come straight to your Mac. You don’t click a&nbsp;thing.</p>
+              </li>
+              <li class="ov-beat">
+                <h3><span data-i18n="ov.filed">Filed.</span></h3>
+                <p data-i18n="ov.filedText">Into a folder for each game and month, under names you can read at a glance.</p>
+                <p class="ov-path"><span class="ov-path-text"><span>Gears of War - E-Day/2026-10/</span><span>2026-10-20 05.51.05 Gears of War - E-Day screenshot.png</span></span></p>
+              </li>
+              <li class="ov-beat">
+                <h3><span data-i18n="ov.copied">Copied.</span></h3>
+                <p data-i18n="ov.copiedText">Then each place you’ve added gets its own copy, so your gaming memories become a little sturdier.</p>
+              </li>
+            </ol>
+            <div class="ov-rail" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          </div>
+
+          <div class="ov-stage" aria-hidden="true">
+            <svg class="ov-check" viewBox="0 0 200 200"><circle class="ov-check-track" cx="100" cy="100" r="98"/><circle class="ov-check-arc" cx="100" cy="100" r="98" pathLength="100"/></svg>
+            <div class="ov-tiles">
+              <figure class="ov-tile" data-game="0"><img src="assets/shots/capture-2-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="2"><img src="assets/shots/capture-7-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="1"><img src="assets/shots/capture-5-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="3"><img src="assets/shots/capture-9-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="4"><img src="assets/shots/capture-11-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="0"><img src="assets/shots/capture-1-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="4"><img src="assets/shots/capture-10-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="5"><img src="assets/shots/capture-12-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="2"><img src="assets/shots/capture-6-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="1"><img src="assets/shots/capture-4-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="0"><img src="assets/shots/capture-3-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+              <figure class="ov-tile" data-game="3"><img src="assets/shots/capture-8-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><span class="ov-glyph ov-cloud"><svg class="icon"><use href="#i-cloud"/></svg></span><svg class="ring ov-ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></figure>
+            </div>
+            <div class="ov-games">
+              <span class="ov-game">Gears of War: E-Day</span>
+              <span class="ov-game">Grand Theft Auto VI</span>
+              <span class="ov-game">Halo: Campaign Evolved</span>
+              <span class="ov-game">South of Midnight</span>
+              <span class="ov-game">Sunset Overdrive</span>
+              <span class="ov-game">The Orange Box</span>
+            </div>
+            <div class="ov-copies">
+              <div class="ov-copy">
+                <div class="ov-mosaic"><img src="assets/shots/capture-2-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-7-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-5-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-9-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-11-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-1-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"></div>
+                <p class="ov-dest"><svg class="icon"><use href="#i-cloud"/></svg><span data-i18n="dest.icloud">iCloud Drive</span><svg class="ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></p>
+              </div>
+              <div class="ov-copy">
+                <div class="ov-mosaic"><img src="assets/shots/capture-2-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-7-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-5-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-9-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-11-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-1-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"></div>
+                <p class="ov-dest"><svg class="icon"><use href="#i-server"/></svg><span>NAS</span><svg class="ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></p>
+              </div>
+              <div class="ov-copy">
+                <div class="ov-mosaic"><img src="assets/shots/capture-2-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-7-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-5-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-9-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-11-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"><img src="assets/shots/capture-1-thumb.webp" alt="" width="480" height="270" loading="lazy" draggable="false"></div>
+                <p class="ov-dest"><svg class="icon"><use href="#i-drive"/></svg><span data-i18n="dest.gdrive">Google Drive</span><svg class="ring" viewBox="0 0 20 20"><circle class="ring-track" cx="10" cy="10" r="8.4"/><circle class="ring-fill" cx="10" cy="10" r="8.4" pathLength="100"/></svg></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Noticed: XBOX's 90 days as 90 dots, the first one top left. Scrolling spends them until a
+         week is left, then the last few go by on their own; at a week, and again at three days,
+         TangoDown's warning arrives, worded as Notifier.expiring posts it. Download in it saves
+         the captures, as it does in the app. Without JavaScript it's the moment of the first
+         warning. -->
+    <div class="noticed" id="noticed">
+      <div class="container nt-layout">
+        <div class="nt-text">
+          <h3 class="nt-title reveal" data-i18n="nt.title">Noticed.</h3>
+          <p class="nt-lede reveal" data-i18n="nt.lede">If a capture still isn’t on your Mac a week before XBOX deletes it, TangoDown lets you know, and again three days before.</p>
+        </div>
+        <div class="nt-stage" tabindex="-1">
+          <div class="nt-top">
+            <p class="nt-cap" aria-hidden="true" data-i18n="nt.day1">Day 1</p>
+            <div class="nt-stack">
+            <div class="nt-banner nt-week" role="group" aria-label="Notification from TangoDown" data-i18n-attr="aria-label:nt.banner">
+              <button class="nt-dismiss" type="button" aria-label="Close" data-i18n-attr="aria-label:close"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5"/></svg></button>
+              <img class="nt-icon" src="assets/brand/icon-128.png" width="128" height="128" alt="" draggable="false">
+              <p class="nt-body"><strong data-i18n="nt.head">3 Captures Expiring Soon</strong> <span data-i18n="nt.week">The first reaches XBOX’s 90-day limit in 7 days.</span></p>
+              <button class="nt-action" type="button" data-i18n="nt.download">Download</button>
+            </div>
+            <div class="nt-banner nt-last" role="group" aria-label="Notification from TangoDown" data-i18n-attr="aria-label:nt.banner">
+              <button class="nt-dismiss" type="button" aria-label="Close" data-i18n-attr="aria-label:close"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5"/></svg></button>
+              <img class="nt-icon" src="assets/brand/icon-128.png" width="128" height="128" alt="" draggable="false">
+              <p class="nt-body"><strong data-i18n="nt.head">3 Captures Expiring Soon</strong> <span data-i18n="nt.last">The first reaches XBOX’s 90-day limit in 3 days.</span></p>
+              <button class="nt-action" type="button" data-i18n="nt.download">Download</button>
+            </div>
+            </div>
+          </div>
+          <div class="nt-days" aria-hidden="true">
+            <i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i>
+            <i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i>
+            <i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i>
+            <i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i>
+            <i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-gone"></i><i class="is-mark is-due"></i><i></i><i></i><i></i><i class="is-mark"></i><i></i><i></i><i></i>
+          </div>
+          <p class="nt-cap nt-cap-end" aria-hidden="true" data-i18n="nt.day90">Day 90</p>
+          <p class="nt-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Backups ================================================================ -->
+  <section class="backups" id="backups" aria-labelledby="backups-title">
+    <div class="container section-head">
+      <p class="eyebrow reveal" data-i18n="bk.eyebrow">Backups</p>
+      <h2 id="backups-title" class="reveal" data-i18n="bk.title">Copies everywhere.</h2>
+      <p class="lead reveal" data-i18n="bk.lead">Add iCloud Drive, Google Drive, Dropbox,<a class="fn" href="#fn-1" id="fnref-1" aria-label="Footnote 1" data-i18n-attr="aria-label:fn.ref1" data-slot="fn">1</a> a NAS or any WebDAV server, and TangoDown copies your captures to each one. <strong>They’re regular files, in the same folders as on your Mac.</strong></p>
+    </div>
+
+    <div class="clouds">
+      <img class="clouds-img" src="assets/wallpapers/dolomites-2880.webp"
+           srcset="assets/wallpapers/dolomites-1600.webp 1600w, assets/wallpapers/dolomites-2880.webp 2880w"
+           sizes="100vw" alt="" width="2880" height="1620" loading="lazy" draggable="false">
+
+      <div class="container">
+        <div class="dest-card reveal" id="destinations">
+          <div class="dest-stage">
+            <canvas aria-hidden="true"></canvas>
+            <div class="dest-tiles" role="tablist" aria-label="Destinations" data-i18n-attr="aria-label:bk.tabs">
+              <div class="dest-tile" data-dest="icloud">
+                <button class="dest-tab" type="button" role="tab" id="dest-tab-icloud" aria-selected="true" aria-controls="dest-panel">
+                  <svg class="dest-mark" viewBox="0 0 36 36" aria-hidden="true"><g class="dest-ring"><circle cx="18" cy="18" r="16.5"/><circle class="dest-ring-fill" cx="18" cy="18" r="16.5" pathLength="100"/></g><use class="dest-icon" href="#i-cloud" x="6" y="6" width="24" height="24"/><path class="dest-check" d="M11.5 18.5l4 4 9-9.5"/></svg>
+                  <span data-i18n="dest.icloud">iCloud Drive</span>
+                </button>
+              </div>
+              <div class="dest-tile" data-dest="gdrive">
+                <button class="dest-tab" type="button" role="tab" id="dest-tab-gdrive" aria-selected="false" aria-controls="dest-panel" tabindex="-1">
+                  <svg class="dest-mark" viewBox="0 0 36 36" aria-hidden="true"><g class="dest-ring"><circle cx="18" cy="18" r="16.5"/><circle class="dest-ring-fill" cx="18" cy="18" r="16.5" pathLength="100"/></g><use class="dest-icon" href="#i-drive" x="6" y="6" width="24" height="24"/><path class="dest-check" d="M11.5 18.5l4 4 9-9.5"/></svg>
+                  <span data-i18n="dest.gdrive">Google Drive</span>
+                </button>
+              </div>
+              <div class="dest-tile" data-dest="dropbox">
+                <button class="dest-tab" type="button" role="tab" id="dest-tab-dropbox" aria-selected="false" aria-controls="dest-panel" tabindex="-1">
+                  <svg class="dest-mark" viewBox="0 0 36 36" aria-hidden="true"><g class="dest-ring"><circle cx="18" cy="18" r="16.5"/><circle class="dest-ring-fill" cx="18" cy="18" r="16.5" pathLength="100"/></g><use class="dest-icon" href="#i-box" x="6" y="6" width="24" height="24"/><path class="dest-check" d="M11.5 18.5l4 4 9-9.5"/></svg>
+                  <span>Dropbox</span>
+                </button>
+              </div>
+              <div class="dest-tile" data-dest="nas">
+                <button class="dest-tab" type="button" role="tab" id="dest-tab-nas" aria-selected="false" aria-controls="dest-panel" tabindex="-1">
+                  <svg class="dest-mark" viewBox="0 0 36 36" aria-hidden="true"><g class="dest-ring"><circle cx="18" cy="18" r="16.5"/><circle class="dest-ring-fill" cx="18" cy="18" r="16.5" pathLength="100"/></g><use class="dest-icon" href="#i-server" x="6" y="6" width="24" height="24"/><path class="dest-check" d="M11.5 18.5l4 4 9-9.5"/></svg>
+                  <span>NAS</span>
+                </button>
+              </div>
+              <div class="dest-tile" data-dest="webdav">
+                <button class="dest-tab" type="button" role="tab" id="dest-tab-webdav" aria-selected="false" aria-controls="dest-panel" tabindex="-1">
+                  <svg class="dest-mark" viewBox="0 0 36 36" aria-hidden="true"><g class="dest-ring"><circle cx="18" cy="18" r="16.5"/><circle class="dest-ring-fill" cx="18" cy="18" r="16.5" pathLength="100"/></g><use class="dest-icon" href="#i-globe" x="6" y="6" width="24" height="24"/><path class="dest-check" d="M11.5 18.5l4 4 9-9.5"/></svg>
+                  <span>WebDAV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dest-panel" id="dest-panel" role="tabpanel" aria-labelledby="dest-tab-icloud">
+            <span class="dest-caret" aria-hidden="true"></span>
+            <div class="dest-descs">
+              <div class="dest-desc is-shown" data-dest="icloud">
+                <h3 data-i18n="bk.icloudH">iCloud Drive, or any folder</h3>
+                <p data-i18n="bk.icloudP">iCloud Drive, an external drive, a folder on your Mac. If you can choose it in Finder, TangoDown can back up to it.</p>
+              </div>
+              <div class="dest-desc" data-dest="gdrive">
+                <h3 data-i18n="dest.gdrive">Google Drive</h3>
+                <p data-i18n="bk.gdriveP">Uploads straight to your Drive through Google’s own API, signed in with an app in your own Google Cloud account. Nothing shared, no one in between.<a class="fn" href="#fn-1" aria-label="Footnote 1" data-i18n-attr="aria-label:fn.ref1" data-slot="fn">1</a></p>
+              </div>
+              <div class="dest-desc" data-dest="dropbox">
+                <h3>Dropbox</h3>
+                <p data-i18n="bk.dropboxP">Copies into an App folder in your Dropbox, signed in with your own Dropbox app.<a class="fn" href="#fn-1" aria-label="Footnote 1" data-i18n-attr="aria-label:fn.ref1" data-slot="fn">1</a></p>
+              </div>
+              <div class="dest-desc" data-dest="nas">
+                <h3 data-i18n="bk.nasH">NAS, over SMB</h3>
+                <p data-i18n="bk.nasP">Finds the NAS on your network and copies to it directly, without mounting a thing. Synology, QNAP, Windows or another Mac. A copy that stops picks up where it left off, where the server allows.</p>
+              </div>
+              <div class="dest-desc" data-dest="webdav">
+                <h3>WebDAV</h3>
+                <p data-i18n="bk.webdavP">Nextcloud, your NAS’s WebDAV service, or any WebDAV server you can sign in to.</p>
+              </div>
+            </div>
+            <button class="dest-switch" type="button" role="switch" aria-checked="true" aria-label="Copy to iCloud Drive"><span aria-hidden="true"></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container backup-split">
+      <div class="facts">
+        <div class="fact reveal">
+          <h3 data-i18n="bk.fact1H">Choose what goes where.</h3>
+          <p data-i18n="bk.fact1P">Each destination takes the kinds, games and dates you pick, up to the file size you set.</p>
+        </div>
+        <div class="fact reveal">
+          <h3 data-i18n="bk.fact2H">A backup, not a mirror.</h3>
+          <p data-i18n="bk.fact2P">Remove a download from your Mac, and its backups stay where they are.</p>
+        </div>
+        <div class="fact reveal">
+          <h3 data-i18n="bk.fact3H">Trust, but verify.</h3>
+          <p data-i18n="bk.fact3P">Check Backups asks each destination whether your files are really still there.</p>
+        </div>
+      </div>
+      <figure class="shot shot-window reveal">
+        <img class="mac-shot" src="assets/shots/destination.webp" width="2624" height="1744" loading="lazy"
+             data-i18n-attr="alt:bk.alt" alt="A NAS destination's page in TangoDown, choosing which kinds of capture, games and dates it receives." draggable="false">
+      </figure>
+    </div>
+  </section>
+
+  <!-- Library =================================================================== -->
+  <section class="library" id="library" aria-labelledby="library-title">
+    <div class="container section-head">
+      <p class="eyebrow reveal" data-i18n="lib.eyebrow">Library</p>
+      <h2 id="library-title" class="reveal" data-i18n="lib.title">Feels like it came with your&nbsp;Mac.</h2>
+      <p class="lead reveal" data-i18n="lib.lead">Every capture, sorted by game, each game with its XBOX icon in the sidebar. Click, Shift-click, ⌘-click or drag to select, and right-click for the menu. <strong>If you know Finder, you already know TangoDown.</strong></p>
+    </div>
+    <div class="container-wide">
+      <figure class="recording reveal" data-state="idle">
+        <video muted playsinline disablepictureinpicture disableremoteplayback preload="none" tabindex="-1" poster="assets/shots/preview-poster.webp" width="1280" height="720"
+               data-i18n-attr="aria-label:lib.video" aria-label="Screen recording: selecting captures in TangoDown, opening them with Space, stepping through to a clip and showing its details." draggable="false">
+          <source data-src="assets/shots/preview.mp4" type="video/mp4">
+        </video>
+        <button class="recording-button" type="button"><svg class="icon icon-play" aria-hidden="true"><use href="#i-play"/></svg><svg class="icon icon-replay" aria-hidden="true"><use href="#i-replay"/></svg><span>Replay</span></button>
+      </figure>
+    </div>
+    <div class="container trio">
+      <div class="reveal">
+        <h3 data-i18n="lib.t1H">Space to look.</h3>
+        <p data-i18n="lib.t1P">Open any capture full size. With a few selected, ← and → step through just those.</p>
+      </div>
+      <div class="reveal">
+        <h3 data-i18n="lib.t2H">Your games, your order.</h3>
+        <p data-i18n="lib.t2P">Drag games in the sidebar into the order you like. New ones join at the end.</p>
+      </div>
+      <div class="reveal">
+        <h3 data-i18n="lib.t3H">Find it fast.</h3>
+        <p data-i18n="lib.t3P">Search by game title, or show only what’s downloaded, what isn’t, or what failed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Design: attention to detail ==============================================
+       Three of the app's details to try: the preview stage, lit by each capture
+       (drawn by site.js after the app, its Liquid Glass buttons and all), the
+       Check Now button, and the library reflowing as its window resizes. -->
+  <section class="design" id="design" aria-labelledby="design-title">
+    <div class="container section-head">
+      <p class="eyebrow reveal" data-i18n="ds.eyebrow">Design</p>
+      <h2 id="design-title" class="reveal" data-i18n="ds.title">Attention to detail, in every frame.</h2>
+      <p class="lead reveal" data-i18n="ds.lead">Built natively in SwiftUI, with Liquid Glass throughout. <strong>The&nbsp;finishing&nbsp;touches got as much care as the big features. Try&nbsp;a&nbsp;few.</strong></p>
+    </div>
+
+    <div class="container td-cards">
+      <article class="td-card reveal" id="ambient" aria-labelledby="ambient-title">
+        <div class="td-ambient-head">
+          <div>
+            <h3 id="ambient-title" data-i18n="amb.title">Lit by your game.</h3>
+            <p data-i18n="amb.text">Each capture sets the mood. Its colors glow softly around the frame and shift with a clip as it plays, the way your screen lights up a dark&nbsp;room.</p>
+          </div>
+          <button class="td-switch" type="button" role="switch" aria-checked="true"><span data-i18n="amb.switch">Ambient background</span><span class="td-sw on" aria-hidden="true"><i></i></span></button>
+        </div>
+        <div class="td-stage-host">
+          <img class="td-still" src="assets/shots/ambient/mhs2.webp" alt="Monster Hunter Stories 2: Wings of Ruin screenshot" data-i18n-attr="alt:amb.stillAlt" width="1920" height="1080" loading="lazy" draggable="false">
+        </div>
+        <div class="td-picks" role="radiogroup" aria-label="Capture" data-i18n-attr="aria-label:amb.picks">
+          <button class="td-pick" type="button" role="radio" aria-checked="false" tabindex="-1" aria-label="Grand Theft Auto VI" title="Grand Theft Auto VI" data-date="Nov 18, 2026 at 23:30" data-media="assets/shots/ambient/gta6.webp" data-tone="assets/shots/ambient/gta6-tone.png"><span><img src="assets/shots/ambient/gta6-thumb.webp" alt="" width="192" height="108" loading="lazy" draggable="false"></span></button>
+          <button class="td-pick" type="button" role="radio" aria-checked="false" tabindex="-1" aria-label="Gears of War: E-Day" title="Gears of War: E-Day" data-date="Oct 7, 2026 at 01:53" data-media="assets/shots/ambient/gears.webp" data-tone="assets/shots/ambient/gears-tone.png"><span><img src="assets/shots/ambient/gears-thumb.webp" alt="" width="192" height="108" loading="lazy" draggable="false"></span></button>
+          <button class="td-pick" type="button" role="radio" aria-checked="true" aria-label="Monster Hunter Stories 2: Wings of Ruin" title="Monster Hunter Stories 2: Wings of Ruin" data-date="Sep 4, 2026 at 02:58" data-media="assets/shots/ambient/mhs2.webp" data-tone="assets/shots/ambient/mhs2-tone.png"><span><img src="assets/shots/ambient/mhs2-thumb.webp" alt="" width="192" height="108" loading="lazy" draggable="false"></span></button>
+          <button class="td-pick" type="button" role="radio" aria-checked="false" tabindex="-1" aria-label="Keeper" title="Keeper" data-date="Jul 10, 2026 at 02:39" data-media="assets/shots/ambient/keeper.webp" data-tone="assets/shots/ambient/keeper-tone.png"><span><img src="assets/shots/ambient/keeper-thumb.webp" alt="" width="192" height="108" loading="lazy" draggable="false"></span></button>
+          <button class="td-pick" type="button" role="radio" aria-checked="false" tabindex="-1" aria-label="Titanfall 2" title="Titanfall 2" data-date="Apr 3, 2026 at 22:02" data-media="assets/shots/ambient/titanfall2.webp" data-tone="assets/shots/ambient/titanfall2-tone.png"><span><img src="assets/shots/ambient/titanfall2-thumb.webp" alt="" width="192" height="108" loading="lazy" draggable="false"></span></button>
+        </div>
+      </article>
+
+      <div class="td-row">
+        <article class="td-card td-refresh reveal" aria-labelledby="refresh-title">
+          <h3 id="refresh-title" data-i18n="rf.title">Refresh, redrawn.</h3>
+          <p data-i18n="rf.text">Click to check XBOX for new captures. The arrow breaks into beads while it looks, then they gather to draw the answer.</p>
+          <div class="td-panel">
+            <button class="td-check" type="button" data-check="big" aria-label="Check with XBOX Now"><svg class="icon" aria-hidden="true"><use href="#s-refresh"/></svg></button>
+            <div class="td-panel-foot">
+              <div class="td-result" role="radiogroup" aria-label="Result" data-i18n-attr="aria-label:rf.result">
+                <button class="td-seg on" type="button" role="radio" aria-checked="true" data-result="done" data-i18n="rf.success">Success</button>
+                <button class="td-seg" type="button" role="radio" aria-checked="false" tabindex="-1" data-result="failed" data-i18n="rf.error">Error</button>
+              </div>
+              <div class="td-actual">
+                <span data-i18n="rf.actual">Actual size</span>
+                <button class="td-check td-check-small" type="button" data-check="small" aria-label="Check with XBOX Now"></button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="td-card td-resize reveal" id="resize-demo" data-state="idle" aria-labelledby="resize-title">
+          <h3 id="resize-title" data-i18n="rs.title">Resize, reflowed.</h3>
+          <p data-i18n="rs.text">Make the window wider or narrower and every capture glides to its new place, however many columns it crosses.</p>
+          <div class="td-video">
+            <video muted playsinline disablepictureinpicture disableremoteplayback preload="none" tabindex="-1" poster="assets/shots/resize-poster.webp" width="960" height="720"
+                   data-i18n-attr="aria-label:rs.video" aria-label="Screen recording: the TangoDown library reflowing as its window is resized." draggable="false">
+              <source data-src="assets/shots/resize.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="td-replay-row">
+            <button class="td-replay" type="button"><svg class="td-icon-play" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg><svg class="td-icon-replay" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5A7 7 0 1 1 7.05 7.55M14.6 2.9 12 5.5l2.6 2.6"/></svg><span>Play</span></button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Photo ===================================================================== -->
+  <section class="live" id="live-photo" aria-labelledby="live-title">
+    <div class="container section-head">
+      <p class="eyebrow reveal" data-i18n="lp.eyebrow">Live Photo</p>
+      <h2 id="live-title" class="reveal" data-i18n="lp.title">Bring your best moments back to&nbsp;life.</h2>
+      <p class="lead reveal" data-i18n="lp.lead">Pick up to ten seconds of any saved clip and the frame that becomes the photo. <strong>AirDrop it straight to your iPhone and it arrives as a Live Photo, sound and all. Press and hold to relive the moment, or share it on any social app that supports Live&nbsp;Photos.</strong><a class="fn" href="#fn-2" id="fnref-2" aria-label="Footnote 2" data-i18n-attr="aria-label:fn.ref2" data-slot="fn">2</a></p>
+    </div>
+
+    <div class="container live-demo reveal" id="live-demo">
+      <div class="phone" tabindex="0" role="button" aria-label="Press and hold to play the Live Photo" data-i18n-attr="aria-label:lp.phone">
+        <div class="phone-screen">
+          <video muted playsinline preload="metadata" poster="assets/shots/clip-poster.webp" width="1280" height="720" draggable="false">
+            <source src="assets/shots/clip.mp4" type="video/mp4">
+          </video>
+          <span class="live-badge"><svg class="icon"><use href="#i-live"/></svg><span data-i18n="lp.badge">LIVE</span></span>
+          <span class="phone-island" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="trim" aria-label="Live Photo editor" data-i18n-attr="aria-label:lp.editor">
+        <div class="trim-track">
+          <div class="trim-frames" aria-hidden="true"></div>
+          <div class="trim-dim trim-dim-l" aria-hidden="true"></div>
+          <div class="trim-dim trim-dim-r" aria-hidden="true"></div>
+          <div class="trim-sel" aria-hidden="true"></div>
+          <div class="trim-handle trim-handle-l" role="slider" tabindex="0" aria-label="Start" data-i18n-attr="aria-label:lp.start"><svg class="icon"><use href="#i-chevron-l"/></svg></div>
+          <div class="trim-handle trim-handle-r" role="slider" tabindex="0" aria-label="End" data-i18n-attr="aria-label:lp.end"><svg class="icon"><use href="#i-chevron-r"/></svg></div>
+          <div class="trim-key" role="slider" tabindex="0" aria-label="Photo" data-i18n-attr="aria-label:lp.photo"></div>
+        </div>
+        <p class="trim-readout"><span class="trim-length">3.0 s</span><span class="trim-sep">·</span><span class="trim-photo">photo at 0:05.0</span></p>
+      </div>
+      <p class="hint" data-i18n="lp.hint">Drag the yellow handles to choose the moment, and the white frame to choose the photo. Then press and hold the picture.</p>
+    </div>
+  </section>
+
+  <!-- Details ========================================================================= -->
+  <section class="details" id="details" aria-labelledby="details-title">
+    <div class="container section-head">
+      <h2 id="details-title" class="reveal" data-i18n="dt.title">And all the little&nbsp;things.</h2>
+    </div>
+
+    <div class="container bento">
+      <article class="card card-menubar reveal">
+        <div class="card-copy">
+          <h3 data-i18n="mb.title">Lives in your menu bar.</h3>
+          <p data-i18n="mb.text">Check now, pause transfers, see what’s about to expire. Turn on Open at login, and TangoDown is always there and never in the way.</p>
+        </div>
+        <div class="menubar-scene" aria-hidden="true">
+          <img class="menubar-wall" src="assets/wallpapers/shore-1200.webp"
+               srcset="assets/wallpapers/shore-1200.webp 1200w, assets/wallpapers/shore-2400.webp 2400w"
+               sizes="(max-width: 900px) 100vw, 760px" alt="" width="2400" height="1890" loading="lazy" draggable="false">
+          <div class="menubar-strip">
+            <span class="menubar-icon"><img src="assets/brand/menubar-icon.svg" alt="" width="16" height="16" draggable="false"></span>
+            <span class="menubar-time" data-i18n="mb.time">Fri Apr 3  07:55</span>
+          </div>
+          <div class="menubar-pop">
+            <div class="menubar-glass"></div>
+            <img class="menubar-panel mac-shot" src="assets/shots/menubar.webp" width="652" height="524" alt="" loading="lazy" draggable="false">
+          </div>
+        </div>
+      </article>
+
+      <article class="card card-schedule reveal">
+        <div class="dial" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><circle class="dial-track" cx="60" cy="60" r="52"/><circle class="dial-fill" cx="60" cy="60" r="52" pathLength="60"/></svg>
+          <span class="dial-num">10<small data-i18n="sc.unit">min</small></span>
+        </div>
+        <h3 data-i18n="sc.title">On a schedule you choose.</h3>
+        <p data-i18n="sc.text">TangoDown checks XBOX every ten minutes. Or as often as every five, or as rarely as every six hours.</p>
+      </article>
+
+      <article class="card card-cloud reveal">
+        <div class="mac-storage" aria-hidden="true"><p><b data-i18n="cl.name">XBOX Cloud</b><span data-i18n="cl.free">6.85 GB free</span></p><span class="mac-bar"><i></i></span></div>
+        <h3 data-i18n="cl.title">Know how full the cloud is.</h3>
+        <p data-i18n="cl.text">How much of your XBOX cloud storage is still free,<a class="fn" href="#fn-3" id="fnref-3" aria-label="Footnote 3" data-i18n-attr="aria-label:fn.ref3" data-slot="fn">3</a> right at the foot of the sidebar.</p>
+      </article>
+
+      <article class="card card-activity reveal">
+        <div class="card-copy">
+          <h3 data-i18n="ac.title">Every transfer, in one place.</h3>
+          <p data-i18n="ac.text">Downloads and copies, with their speed and progress. Pause, resume or retry one, or all of them at once.</p>
+        </div>
+        <div class="activity-shot">
+          <img class="mac-shot" src="assets/shots/activity.webp" width="2624" height="1504" loading="lazy"
+               data-i18n-attr="alt:ac.alt" alt="TangoDown's Activity table: downloads and copies with their progress and destination." draggable="false">
+        </div>
+      </article>
+
+      <article class="card card-space reveal">
+        <span class="card-symbol"><svg class="icon"><use href="#i-drive"/></svg></span>
+        <h3 data-i18n="sp.title">Room to breathe.</h3>
+        <p data-i18n="sp.text">Remove Backed-Up Downloads clears what your destinations already hold off your Mac. Run Check Backups first, if you like to be sure.</p>
+      </article>
+
+      <article class="card card-privacy reveal">
+        <span class="card-symbol"><svg class="icon"><use href="#i-lock"/></svg></span>
+        <h3 data-i18n="pv.title">Nobody in the middle.</h3>
+        <p data-i18n="pv.text">No TangoDown account, no TangoDown servers. Captures go from XBOX to your Mac to your destinations, and every sign-in is sealed by your Mac’s Secure Enclave.</p>
+      </article>
+
+      <article class="card card-languages reveal">
+        <ul class="languages" aria-label="Languages" data-i18n-attr="aria-label:lg.list">
+          <li lang="en">English</li>
+          <li lang="fr">Français</li>
+          <li lang="de">Deutsch</li>
+          <li lang="ja">日本語</li>
+          <li lang="zh-Hant">繁體中文</li>
+          <li lang="zh-Hans">简体中文</li>
+        </ul>
+        <h3 data-i18n="lg.title">Speaks your language.</h3>
+        <p data-i18n="lg.text">TangoDown follows your Mac’s language, or whichever you choose. Folder and file names stay the same in every one.</p>
+      </article>
+
+      <article class="card card-access reveal">
+        <span class="card-symbol"><svg class="icon"><use href="#i-person"/></svg></span>
+        <div>
+          <h3 data-i18n="ax.title">Made for everyone.</h3>
+          <p data-i18n="ax.text">VoiceOver reads each capture’s game, kind, length and date. Full keyboard control, and Reduce Transparency, Reduce Motion and Increase Contrast, all respected.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Download ========================================================================== -->
+  <section class="download" id="download" aria-labelledby="download-title">
+    <canvas class="download-field" aria-hidden="true"></canvas>
+    <div class="container download-copy">
+      <img class="download-icon reveal" src="assets/brand/icon-512.png" width="168" height="168" alt="TangoDown app icon" data-i18n-attr="alt:dl.alt" draggable="false">
+      <h2 id="download-title" class="reveal" data-i18n="dl.title">Set it up once.</h2>
+      <p class="lead reveal" data-i18n="dl.lead">Sign in with XBOX, and TangoDown takes it from there.</p>
+      <div class="cta-row reveal">
+        <a class="btn btn-large" href="downloads/TangoDown-1.0.9.dmg" data-download>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"/></svg>
+          <span data-i18n="dl.cta">Download TangoDown</span>
+        </a>
+      </div>
+      <p class="fine reveal" data-i18n="fine">Version <span data-slot="version">1.0.9</span> · macOS <span data-slot="macos">26</span> or later</p>
+
+      <details class="first-open reveal">
+        <summary data-i18n="fo.summary">Opening TangoDown the first time</summary>
+        <div class="first-open-body">
+          <p data-i18n="fo.p1">TangoDown isn’t notarized by Apple, so macOS asks you to confirm it once.</p>
+          <ol>
+            <li data-i18n="fo.s1">Move TangoDown to your Applications folder and double-click it. When macOS says it couldn’t verify TangoDown, click Done.</li>
+            <li data-i18n="fo.s2">Open System Settings › Privacy &amp; Security. Under Security, next to the message about TangoDown, click Open Anyway, then confirm.</li>
+          </ol>
+          <p data-i18n="fo.p2">After that, TangoDown opens like any other app. Do the same after installing a new version.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <ol class="footnotes">
+      <li id="fn-1" data-i18n="fn.1">Google Drive and Dropbox sign in with an app you create in your own Google Cloud or Dropbox account, so no app, quota or sign-in is shared with anyone. The step-by-step guides take about ten minutes and are in TangoDown’s Help menu. <a href="#fnref-1" aria-label="Back to the text" data-i18n-attr="aria-label:fn.back" data-slot="back">↩</a></li>
+      <li id="fn-2" data-i18n="fn.2">A Live Photo made from a clip plays in Photos on iPhone and Mac. iOS keeps animated Lock Screen wallpapers for Live Photos taken with its own camera. <a href="#fnref-2" aria-label="Back to the text" data-i18n-attr="aria-label:fn.back" data-slot="back">↩</a></li>
+      <li id="fn-3" data-i18n="fn.3">XBOX network keeps up to 10 GB of uploaded captures. It doesn’t report the limit, so TangoDown measures against the figure XBOX Support gives. <a href="#fnref-3" aria-label="Back to the text" data-i18n-attr="aria-label:fn.back" data-slot="back">↩</a></li>
+    </ol>
+    <div class="footer-base">
+      <p class="footer-brand"><img src="assets/brand/icon-128.png" width="20" height="20" alt="" draggable="false">TangoDown</p>
+      <p data-i18n="ft.legal">TangoDown is not affiliated with Microsoft or XBOX. XBOX is a trademark of the Microsoft group of companies.</p>
+      <p>© 2026 TangoDown</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
