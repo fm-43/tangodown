@@ -39,7 +39,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Put the latest release on the page
         env:
           GH_TOKEN: ${{ github.token }}
@@ -61,6 +61,6 @@ jobs:
           else
             echo "::warning::No release yet, so the Download buttons keep the links in index.html"
           fi
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
